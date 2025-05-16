@@ -1,0 +1,17 @@
+{
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.1",
+    "@types/express-validator": "^2.20.33",
+    "@types/jsonwebtoken": "^9.0.9",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.10"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.24"
+  }
+}
