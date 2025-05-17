@@ -11,7 +11,8 @@ import NotificationController from "./controllers/NotificationController";
 import AuthController from "./controllers/AuthController";
 import { authMiddleware } from "./middleware/authMiddleware";
 import { roleMiddleware } from "./middleware/roleMiddleware";
-import { query, validationResult } from "express-validator";
+import { validateUserSearch } from './validators/userValidator';
+import { validateProductSearch } from './validators/productValidator';
 
 const app = express();
 
@@ -40,12 +41,9 @@ app.use("/api/v1/notifications", NotificationController);
 // Example: User search/filter endpoint
 app.get(
   "/api/v1/users/search",
-  [query("role").optional().isString(), query("name").optional().isString()],
+  validateUserSearch,
   async (req : any, res : any) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     // Implement search logic in UserService
-    // e.g., UserService.search({ role: req.query.role, name: req.query.name })
     res.json([]); // Placeholder
   }
 );
@@ -53,12 +51,9 @@ app.get(
 // Example: Product search/filter endpoint
 app.get(
   "/api/v1/products/search",
-  [query("name").optional().isString(), query("category").optional().isString()],
+  validateProductSearch,
   async (req : any, res : any) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     // Implement search logic in ProductService
-    // e.g., ProductService.search({ name: req.query.name, category: req.query.category })
     res.json([]); // Placeholder
   }
 );
@@ -72,6 +67,10 @@ app.use((req : any, res : any, next : any) => {
 app.use((err : any, req : any, res : any, next : any) => {
   console.error(err);
   res.status(500).json({ message: "Internal Server Error", error: err.message });
+});
+
+app.listen(5000, () => {
+  console.log("Server is running on port 5000");
 });
 
 export default app; 

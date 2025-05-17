@@ -1,7 +1,7 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, RequestHandler } from "express";
 import { CustomerService } from "../services/CustomerService";
-import { body, validationResult } from "express-validator";
 import { roleMiddleware } from "../middleware/roleMiddleware";
+import { validateCustomerCreation } from '../validators/customerValidator';
 
 const router = Router();
 
@@ -21,17 +21,8 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post(
   "/",
-  [
-    body("name").notEmpty(),
-    body("contact_info").notEmpty(),
-    body("status").optional().isString()
-  ],
+  validateCustomerCreation as RequestHandler,
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const customer = await CustomerService.create(req.body);
     res.status(201).json(customer);
   }
@@ -39,17 +30,27 @@ router.post(
 
 router.put(
   "/:id",
-  [
-    body("name").optional().notEmpty(),
-    body("contact_info").optional().notEmpty(),
-    body("status").optional().isString()
-  ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+    const { name, contact_info, status } = req.body;
+    const errors: string[] = [];
+
+    if (name && typeof name !== 'string') {
+      errors.push('Name must be a string');
+    }
+
+    if (contact_info && typeof contact_info !== 'string') {
+      errors.push('Contact info must be a string');
+    }
+
+    if (status && typeof status !== 'string') {
+      errors.push('Status must be a string');
+    }
+
+    if (errors.length > 0) {
+      res.status(400).json({ errors });
       return;
     }
+
     const customer = await CustomerService.update(Number(req.params.id), req.body);
     if (!customer) {
       res.status(404).json({ message: "Customer not found" });

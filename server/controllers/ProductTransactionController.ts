@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ProductTransactionService } from "../services/ProductTransactionService";
-import { body, validationResult } from "express-validator";
 import { roleMiddleware } from "../middleware/roleMiddleware";
+import { validateProductTransactionCreation } from '../validators/productTransactionValidator';
 
 const router = Router();
 
@@ -21,18 +21,8 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
 router.post(
   "/",
-  [
-    body("debtTransaction").notEmpty(),
-    body("product").notEmpty(),
-    body("quantity").isInt(),
-    body("price_at_sale").isNumeric()
-  ],
+  validateProductTransactionCreation,
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const pt = await ProductTransactionService.create(req.body);
     res.status(201).json(pt);
   }
@@ -40,18 +30,31 @@ router.post(
 
 router.put(
   "/:id",
-  [
-    body("debtTransaction").optional().notEmpty(),
-    body("product").optional().notEmpty(),
-    body("quantity").optional().isInt(),
-    body("price_at_sale").optional().isNumeric()
-  ],
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+    const { debtTransaction, product, quantity, price_at_sale } = req.body;
+    const errors: string[] = [];
+
+    if (debtTransaction && typeof debtTransaction !== 'string') {
+      errors.push('DebtTransaction must be a string');
+    }
+
+    if (product && typeof product !== 'string') {
+      errors.push('Product must be a string');
+    }
+
+    if (quantity && typeof quantity !== 'number') {
+      errors.push('Quantity must be a number');
+    }
+
+    if (price_at_sale && typeof price_at_sale !== 'number') {
+      errors.push('Price at sale must be a number');
+    }
+
+    if (errors.length > 0) {
+      res.status(400).json({ errors });
       return;
     }
+
     const pt = await ProductTransactionService.update(Number(req.params.id), req.body);
     if (!pt) {
       res.status(404).json({ message: "ProductTransaction not found" });

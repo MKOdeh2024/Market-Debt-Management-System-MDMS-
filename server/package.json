@@ -1,11 +1,23 @@
 {
+  "name": "inventory-management-system-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Inventory Management System Server",
+  "main": "server/app.ts",
+  "scripts": {
+    "build-tsc": "tsc -w",
+    "run-watch": "nodemon ./dist/app.js",
+    "dev": "concurrently \"npm:build-tsc\" \"npm:run-watch\"",
+    "start": "ts-node server/app.ts"
+  },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.1",
     "@types/express-validator": "^2.20.33",
     "@types/jsonwebtoken": "^9.0.9",
     "concurrently": "^9.1.2",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
     "express": "^5.1.0",

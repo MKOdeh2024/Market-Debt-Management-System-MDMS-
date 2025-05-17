@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    /* Language and Environment */
+    "target": "ESNext",                        // Latest ECMAScript output
+    "module": "ESNext",                        // For modern module output
+    "moduleResolution": "node",               // Node.js resolution algorithm
+    "resolveJsonModule": true,                // Allow importing .json files
+    "esModuleInterop": true,                  // Enable default import interoperability
+    "allowSyntheticDefaultImports": true,     // Allow synthetic default imports
+    "forceConsistentCasingInFileNames": true, // Enforce consistent import casing
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,                            // Enable all strict type checks
+    "strictPropertyInitialization": false,
+
+    /* Output */
+    "outDir": "./dist",                       // Output directory
+
+    /* Interop Constraints */
+    "isolatedModules": true,                  // Ensure each file can be transpiled independently
+    "skipLibCheck": true,                     // Skip type checking of declaration files for faster build
+
+    /* Comments & Suggestions */
+    // You can uncomment below as needed:
+    // "sourceMap": true,
+    // "noEmitOnError": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "strictNullChecks": true,
+    // "alwaysStrict": true,
+    // "baseUrl": "./src",
+    // "paths": {
+    //   "@utils/*": ["utils/*"]
+    // }
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

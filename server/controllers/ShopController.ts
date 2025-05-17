@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ShopService } from "../services/ShopService";
-import { body, validationResult } from "express-validator";
 import { roleMiddleware } from "../middleware/roleMiddleware";
+import { validateShopCreation } from '../validators/shopValidator';
 
 const router = Router();
 
@@ -21,16 +21,8 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
 router.post(
   "/",
-  [
-    body("name").notEmpty(),
-    body("address").notEmpty()
-  ],
+  validateShopCreation,
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const shop = await ShopService.create(req.body);
     res.status(201).json(shop);
   }
@@ -38,16 +30,23 @@ router.post(
 
 router.put(
   "/:id",
-  [
-    body("name").optional().notEmpty(),
-    body("address").optional().notEmpty()
-  ],
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+    const { name, address } = req.body;
+    const errors: string[] = [];
+
+    if (name && typeof name !== 'string') {
+      errors.push('Name must be a string');
+    }
+
+    if (address && typeof address !== 'string') {
+      errors.push('Address must be a string');
+    }
+
+    if (errors.length > 0) {
+      res.status(400).json({ errors });
       return;
     }
+
     const shop = await ShopService.update(Number(req.params.id), req.body);
     if (!shop) {
       res.status(404).json({ message: "Shop not found" });

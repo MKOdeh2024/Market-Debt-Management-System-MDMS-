@@ -1,7 +1,7 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, RequestHandler } from 'express';
 import { AuditLogService } from "../services/AuditLogService";
-import { body, validationResult } from "express-validator";
 import { roleMiddleware } from "../middleware/roleMiddleware";
+import { validateAuditLogCreation } from '../validators/auditLogValidator';
 
 const router = Router();
 
@@ -21,19 +21,8 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post(
   "/",
-  [
-    body("user").notEmpty(),
-    body("action").notEmpty(),
-    body("entity_type").notEmpty(),
-    body("entity_id").notEmpty(),
-    body("details").notEmpty()
-  ],
+  validateAuditLogCreation as RequestHandler,
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const log = await AuditLogService.create(req.body);
     res.status(201).json(log);
   }
@@ -41,19 +30,35 @@ router.post(
 
 router.put(
   "/:id",
-  [
-    body("user").optional().notEmpty(),
-    body("action").optional().notEmpty(),
-    body("entity_type").optional().notEmpty(),
-    body("entity_id").optional().notEmpty(),
-    body("details").optional().notEmpty()
-  ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+    const { user, action, entity_type, entity_id, details } = req.body;
+    const errors: string[] = [];
+
+    if (user && typeof user !== 'string') {
+      errors.push('User must be a string');
+    }
+
+    if (action && typeof action !== 'string') {
+      errors.push('Action must be a string');
+    }
+
+    if (entity_type && typeof entity_type !== 'string') {
+      errors.push('Entity type must be a string');
+    }
+
+    if (entity_id && typeof entity_id !== 'string') {
+      errors.push('Entity ID must be a string');
+    }
+
+    if (details && typeof details !== 'string') {
+      errors.push('Details must be a string');
+    }
+
+    if (errors.length > 0) {
+      res.status(400).json({ errors });
       return;
     }
+
     const log = await AuditLogService.update(Number(req.params.id), req.body);
     if (!log) {
       res.status(404).json({ message: "AuditLog not found" });

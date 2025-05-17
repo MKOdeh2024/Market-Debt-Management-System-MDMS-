@@ -1,6 +1,7 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, RequestHandler } from "express";
 import { ProductService } from "../services/ProductService";
 import { body, validationResult, query } from "express-validator";
+import { validateProductCreation } from '../validators/productValidator';
 
 const router = Router();
 
@@ -12,14 +13,24 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 // Search/filter endpoint
 router.get(
   "/search",
-  [query("name").optional().isString(), query("category").optional().isString()],
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+    const { name, category } = req.query;
+    const errors: string[] = [];
+
+    if (name && typeof name !== 'string') {
+      errors.push('Name must be a string');
+    }
+
+    if (category && typeof category !== 'string') {
+      errors.push('Category must be a string');
+    }
+
+    if (errors.length > 0) {
+      res.status(400).json({ errors });
       return;
     }
-    const products = await ProductService.search({ name: req.query.name as string, category: req.query.category as string });
+
+    const products = await ProductService.search({ name: name as string, category: category as string });
     res.json(products);
   }
 );
@@ -35,21 +46,8 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
 router.post(
   "/",
-  [
-    body("name").notEmpty(),
-    body("brand").notEmpty(),
-    body("category").notEmpty(),
-    body("barcode").notEmpty(),
-    body("price_per_unit").isNumeric(),
-    body("quantity_in_stock").isInt(),
-    body("tax").isNumeric()
-  ],
+  validateProductCreation as RequestHandler,
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const product = await ProductService.create(req.body);
     res.status(201).json(product);
   }

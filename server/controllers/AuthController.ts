@@ -1,9 +1,9 @@
-import { Router, Request, Response } from "express";
-import { body, validationResult } from "express-validator";
+import { Router, Request, Response, RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { UserService } from "../services/UserService";
 import { UserRole } from "../entities/User";
+import { validateRegistration } from '../validators/userValidator';
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "changeme";
@@ -11,18 +11,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "changeme";
 // Register
 router.post(
   "/register",
-  [
-    body("name").notEmpty(),
-    body("email").isEmail(),
-    body("password").isLength({ min: 6 }),
-    body("role").isIn([UserRole.ADMIN, UserRole.CASHIER, UserRole.CUSTOMER])
-  ],
+  validateRegistration as RequestHandler,
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const { name, email, password, role } = req.body;
     const existing = await UserService.findByEmail(email);
     if (existing) {
@@ -38,17 +28,23 @@ router.post(
 // Login
 router.post(
   "/login",
-  [
-    body("email").isEmail(),
-    body("password").notEmpty()
-  ],
   async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
+    const { email, password } = req.body;
+    const errors: string[] = [];
+
+    if (!email || typeof email !== 'string') {
+      errors.push('Email is required and must be a string');
+    }
+
+    if (!password || typeof password !== 'string') {
+      errors.push('Password is required and must be a string');
+    }
+
+    if (errors.length > 0) {
+      res.status(400).json({ errors });
       return;
     }
-    const { email, password } = req.body;
+
     const user = await UserService.findByEmail(email);
     if (!user) {
       res.status(401).json({ message: "Invalid credentials" });

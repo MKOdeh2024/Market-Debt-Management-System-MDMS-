@@ -15,9 +15,9 @@ export const AppDataSource = new DataSource({
   host: process.env.DB_HOST || "localhost",
   port: Number(process.env.DB_PORT) || 3306,
   username: process.env.DB_USER || "root",
-  password: process.env.DB_PASS || "password",
+  password: process.env.DB_PASS || "",
   database: process.env.DB_NAME || "mdms",
-  synchronize: false, // use migrations
+  synchronize: true, // use migrations
   logging: false,
   entities: [
     User,
