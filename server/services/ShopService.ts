@@ -1,4 +1,4 @@
-import { AppDataSource } from "../data-source";
+import AppDataSource  from "../data-source";
 import { Shop } from "../entities/Shop";
 
 export class ShopService {

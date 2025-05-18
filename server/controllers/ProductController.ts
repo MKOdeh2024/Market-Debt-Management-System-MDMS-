@@ -1,7 +1,6 @@
-import { Router, Request, Response, RequestHandler } from "express";
+import { Router, Request, Response, RequestHandler, NextFunction } from "express";
 import { ProductService } from "../services/ProductService";
-import { body, validationResult, query } from "express-validator";
-import { validateProductCreation } from '../validators/productValidator';
+import { validateProductCreation, validateProductSearch } from '../validators/productValidator';
 
 const router = Router();
 
@@ -13,24 +12,9 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 // Search/filter endpoint
 router.get(
   "/search",
+  validateProductSearch as RequestHandler,
   async (req: Request, res: Response): Promise<void> => {
-    const { name, category } = req.query;
-    const errors: string[] = [];
-
-    if (name && typeof name !== 'string') {
-      errors.push('Name must be a string');
-    }
-
-    if (category && typeof category !== 'string') {
-      errors.push('Category must be a string');
-    }
-
-    if (errors.length > 0) {
-      res.status(400).json({ errors });
-      return;
-    }
-
-    const products = await ProductService.search({ name: name as string, category: category as string });
+    const products = await ProductService.search({ name: req.query.name as string, category: req.query.category as string });
     res.json(products);
   }
 );
@@ -44,6 +28,25 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
   res.json(product);
 });
 
+const validateProductUpdate: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
+  const { name, brand, category, barcode, price_per_unit, quantity_in_stock, tax } = req.body;
+  const errors: string[] = [];
+
+  if (name && typeof name !== 'string') errors.push('Name must be a string');
+  if (brand && typeof brand !== 'string') errors.push('Brand must be a string');
+  if (category && typeof category !== 'string') errors.push('Category must be a string');
+  if (barcode && typeof barcode !== 'string') errors.push('Barcode must be a string');
+  if (price_per_unit && typeof price_per_unit !== 'number') errors.push('Price per unit must be a number');
+  if (quantity_in_stock && !Number.isInteger(quantity_in_stock)) errors.push('Quantity in stock must be an integer');
+  if (tax && typeof tax !== 'number') errors.push('Tax must be a number');
+
+  if (errors.length > 0) {
+    res.status(400).json({ errors });
+    return;
+  }
+  next();
+};
+
 router.post(
   "/",
   validateProductCreation as RequestHandler,
@@ -55,21 +58,8 @@ router.post(
 
 router.put(
   "/:id",
-  [
-    body("name").optional().notEmpty(),
-    body("brand").optional().notEmpty(),
-    body("category").optional().notEmpty(),
-    body("barcode").optional().notEmpty(),
-    body("price_per_unit").optional().isNumeric(),
-    body("quantity_in_stock").optional().isInt(),
-    body("tax").optional().isNumeric()
-  ],
+  validateProductUpdate,
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const product = await ProductService.update(Number(req.params.id), req.body);
     if (!product) {
       res.status(404).json({ message: "Product not found" });
@@ -88,4 +78,4 @@ router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
   res.json({ success: true });
 });
 
-export default router; 
+export default router;

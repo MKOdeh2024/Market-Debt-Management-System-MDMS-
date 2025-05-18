@@ -1,4 +1,5 @@
 import express from "express";
+import AppDataSource  from "./data-source";
 import UserController from "./controllers/UserController";
 import ShopController from "./controllers/ShopController";
 import CustomerController from "./controllers/CustomerController";
@@ -69,7 +70,8 @@ app.use((err : any, req : any, res : any, next : any) => {
   res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
-app.listen(5000, () => {
+app.listen(4000, () => {
+  AppDataSource.initialize();
   console.log("Server is running on port 5000");
 });
 

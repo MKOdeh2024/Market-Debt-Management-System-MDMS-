@@ -1,9 +1,40 @@
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction, RequestHandler } from "express";
 import { NotificationService } from "../services/NotificationService";
-import { body, validationResult } from "express-validator";
 import { roleMiddleware } from "../middleware/roleMiddleware";
 
 const router = Router();
+
+const validateNotificationCreation: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
+  const { user, type, message, status } = req.body;
+  const errors: string[] = [];
+
+  if (!user) errors.push('User is required');
+  if (!type) errors.push('Type is required');
+  if (!message) errors.push('Message is required');
+  if (status !== undefined && typeof status !== 'string') errors.push('Status must be a string');
+
+  if (errors.length > 0) {
+    res.status(400).json({ errors });
+    return;
+  }
+  next();
+};
+
+const validateNotificationUpdate: RequestHandler = (req: Request, res: Response, next: NextFunction): void => {
+  const { user, type, message, status } = req.body;
+  const errors: string[] = [];
+
+  if (user !== undefined && !user) errors.push('User cannot be empty');
+  if (type !== undefined && !type) errors.push('Type cannot be empty');
+  if (message !== undefined && !message) errors.push('Message cannot be empty');
+  if (status !== undefined && typeof status !== 'string') errors.push('Status must be a string');
+
+  if (errors.length > 0) {
+    res.status(400).json({ errors });
+    return;
+  }
+  next();
+};
 
 router.get("/", async (req: Request, res: Response): Promise<void> => {
   const notifications = await NotificationService.list();
@@ -21,18 +52,8 @@ router.get("/:id", async (req: Request, res: Response): Promise<void> => {
 
 router.post(
   "/",
-  [
-    body("user").notEmpty(),
-    body("type").notEmpty(),
-    body("message").notEmpty(),
-    body("status").optional().isString()
-  ],
+  validateNotificationCreation,
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const notification = await NotificationService.create(req.body);
     res.status(201).json(notification);
   }
@@ -40,18 +61,8 @@ router.post(
 
 router.put(
   "/:id",
-  [
-    body("user").optional().notEmpty(),
-    body("type").optional().notEmpty(),
-    body("message").optional().notEmpty(),
-    body("status").optional().isString()
-  ],
+  validateNotificationUpdate,
   async (req: Request, res: Response): Promise<void> => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
     const notification = await NotificationService.update(Number(req.params.id), req.body);
     if (!notification) {
       res.status(404).json({ message: "Notification not found" });
@@ -70,4 +81,4 @@ router.delete("/:id", roleMiddleware("admin"), async (req: Request, res: Respons
   res.json({ success: true });
 });
 
-export default router; 
+export default router;

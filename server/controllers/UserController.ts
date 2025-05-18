@@ -1,6 +1,5 @@
-import { Router, Request, Response, RequestHandler } from "express";
+import { Router, Request, Response, NextFunction } from 'express';
 import { UserService } from "../services/UserService";
-import { body, query, validationResult } from "express-validator";
 import { roleMiddleware } from "../middleware/roleMiddleware";
 import { validateUserCreation, validateUserUpdate } from '../validators/userValidator';
 
@@ -56,7 +55,7 @@ router.post(
 
 router.put(
   "/:id",
-  validateUserUpdate as RequestHandler,
+  validateUserUpdate,
   async (req: Request, res: Response): Promise<void> => {
     const user = await UserService.update(Number(req.params.id), req.body);
     if (!user) {
@@ -76,4 +75,4 @@ router.delete("/:id", roleMiddleware("admin"), async (req: Request, res: Respons
   res.json({ success: true });
 });
 
-export default router; 
+export default router;

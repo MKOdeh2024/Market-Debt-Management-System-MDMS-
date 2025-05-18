@@ -1,4 +1,4 @@
-import { AppDataSource } from "../data-source";
+import  AppDataSource  from "../data-source";
 import { Notification } from "../entities/Notification";
 
 export class NotificationService {

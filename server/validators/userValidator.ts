@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 
-export const validateUserCreation = (req: Request, res: Response, next: NextFunction) => {
+export const validateUserCreation = (req: Request, res: Response, next: NextFunction): void => {
   const { name, email, password, role } = req.body;
   const errors: string[] = [];
 
@@ -22,13 +22,14 @@ export const validateUserCreation = (req: Request, res: Response, next: NextFunc
 
   if (errors.length > 0) {
     res.status(400).json({ errors });
-  } else {
-    next();
+    return;
   }
+
+  next();
 };
 
 
-export const validateUserSearch = (req: Request, res: Response, next: NextFunction) => {
+export const validateUserSearch = (req: Request, res: Response, next: NextFunction): void => {
   const { role, name } = req.query;
   const errors: string[] = [];
 
@@ -42,12 +43,13 @@ export const validateUserSearch = (req: Request, res: Response, next: NextFuncti
 
   if (errors.length > 0) {
     res.status(400).json({ errors });
-  } else {
-    next();
+    return;
   }
+
+  next();
 };
 
-export const validateRegistration = (req: Request, res: Response, next: NextFunction) => {
+export const validateRegistration = (req: Request, res: Response, next: NextFunction): void => {
   const { name, email, password, role } = req.body;
   const errors: string[] = [];
 
@@ -68,13 +70,14 @@ export const validateRegistration = (req: Request, res: Response, next: NextFunc
   }
 
   if (errors.length > 0) {
-    return res.status(400).json({ errors });
+    res.status(400).json({ errors });
+    return;
   }
 
   next();
 }; 
 
-export const validateUserUpdate = (req: Request, res: Response, next: NextFunction) => {
+export const validateUserUpdate = (req: Request, res: Response, next: NextFunction): void => {
   const { name, email, role } = req.body;
   const errors: string[] = [];
 
@@ -91,7 +94,8 @@ export const validateUserUpdate = (req: Request, res: Response, next: NextFuncti
   }
 
   if (errors.length > 0) {
-    return res.status(400).json({ errors });
+    res.status(400).json({ errors });
+    return;
   }
 
   next();

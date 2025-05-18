@@ -1,5 +1,5 @@
 import app from "./app";
-import { AppDataSource } from "./data-source";
+import AppDataSource from "./data-source";
 
 const PORT = process.env.PORT || 4000;
 
@@ -10,6 +10,6 @@ AppDataSource.initialize()
       console.log(`Server running on port ${PORT}`);
     });
   })
-  .catch((err) => {
+  .catch((err: any) => {
     console.error("Error during Data Source initialization", err);
-  }); 
+  });

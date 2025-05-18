@@ -10,7 +10,7 @@ import { AuditLog } from "./entities/AuditLog";
 import { SupportTicket } from "./entities/SupportTicket";
 import { Notification } from "./entities/Notification";
 
-export const AppDataSource = new DataSource({
+const AppDataSource = new DataSource({
   type: "mysql",
   host: process.env.DB_HOST || "localhost",
   port: Number(process.env.DB_PORT) || 3306,
@@ -33,3 +33,13 @@ export const AppDataSource = new DataSource({
   migrations: ["server/migrations/*.ts"],
   subscribers: [],
 }); 
+
+AppDataSource.initialize()
+  .then(() => {
+    console.log("Data Source has been initialized!");
+  })
+  .catch((err) => {
+    console.error("Error during Data Source initialization", err);
+  });
+
+export default AppDataSource;
